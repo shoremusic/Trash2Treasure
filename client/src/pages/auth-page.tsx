@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/authProvider";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -34,11 +34,12 @@ export default function AuthPage() {
   const { toast } = useToast();
   const [location, navigate] = useLocation();
 
-  // Redirect if user is already logged in
-  if (user) {
-    navigate("/");
-    return null;
-  }
+  // Using useEffect for navigation to avoid React hooks rule violations
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),

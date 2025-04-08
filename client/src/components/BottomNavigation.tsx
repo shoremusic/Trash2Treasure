@@ -11,34 +11,30 @@ type BottomNavigationProps = {
 export default function BottomNavigation({ active, onCreateClick }: BottomNavigationProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white h-16 flex items-center justify-around border-t border-neutral-200 z-30">
-      <Link href="/">
-        <a className="flex flex-col items-center p-1">
-          <MapPin className={cn(
-            "h-5 w-5",
-            active === "discover" ? "text-primary" : "text-muted-foreground"
-          )} />
-          <span className={cn(
-            "text-xs",
-            active === "discover" ? "text-primary" : "text-muted-foreground"
-          )}>
-            Discover
-          </span>
-        </a>
+      <Link href="/" className="flex flex-col items-center p-1">
+        <MapPin className={cn(
+          "h-5 w-5",
+          active === "discover" ? "text-primary" : "text-muted-foreground"
+        )} />
+        <span className={cn(
+          "text-xs",
+          active === "discover" ? "text-primary" : "text-muted-foreground"
+        )}>
+          Discover
+        </span>
       </Link>
       
-      <Link href="/search">
-        <a className="flex flex-col items-center p-1">
-          <Search className={cn(
-            "h-5 w-5",
-            active === "search" ? "text-primary" : "text-muted-foreground"
-          )} />
-          <span className={cn(
-            "text-xs",
-            active === "search" ? "text-primary" : "text-muted-foreground"
-          )}>
-            Search
-          </span>
-        </a>
+      <Link href="/search" className="flex flex-col items-center p-1">
+        <Search className={cn(
+          "h-5 w-5",
+          active === "search" ? "text-primary" : "text-muted-foreground"
+        )} />
+        <span className={cn(
+          "text-xs",
+          active === "search" ? "text-primary" : "text-muted-foreground"
+        )}>
+          Search
+        </span>
       </Link>
       
       {/* Floating action button */}
@@ -51,34 +47,30 @@ export default function BottomNavigation({ active, onCreateClick }: BottomNaviga
         </Button>
       </div>
       
-      <Link href="/notifications">
-        <a className="flex flex-col items-center p-1">
-          <Bell className={cn(
-            "h-5 w-5",
-            active === "notifications" ? "text-primary" : "text-muted-foreground"
-          )} />
-          <span className={cn(
-            "text-xs",
-            active === "notifications" ? "text-primary" : "text-muted-foreground"
-          )}>
-            Alerts
-          </span>
-        </a>
+      <Link href="/notifications" className="flex flex-col items-center p-1">
+        <Bell className={cn(
+          "h-5 w-5",
+          active === "notifications" ? "text-primary" : "text-muted-foreground"
+        )} />
+        <span className={cn(
+          "text-xs",
+          active === "notifications" ? "text-primary" : "text-muted-foreground"
+        )}>
+          Alerts
+        </span>
       </Link>
       
-      <Link href="/profile">
-        <a className="flex flex-col items-center p-1">
-          <User className={cn(
-            "h-5 w-5",
-            active === "profile" ? "text-primary" : "text-muted-foreground"
-          )} />
-          <span className={cn(
-            "text-xs",
-            active === "profile" ? "text-primary" : "text-muted-foreground"
-          )}>
-            Profile
-          </span>
-        </a>
+      <Link href="/profile" className="flex flex-col items-center p-1">
+        <User className={cn(
+          "h-5 w-5",
+          active === "profile" ? "text-primary" : "text-muted-foreground"
+        )} />
+        <span className={cn(
+          "text-xs",
+          active === "profile" ? "text-primary" : "text-muted-foreground"
+        )}>
+          Profile
+        </span>
       </Link>
     </div>
   );
