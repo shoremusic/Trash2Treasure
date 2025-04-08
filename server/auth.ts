@@ -72,7 +72,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/auth/register", async (req, res, next) => {
+  app.post("/api/register", async (req, res, next) => {
     try {
       const { username, email, password } = req.body;
       
@@ -114,7 +114,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/auth/login", (req, res, next) => {
+  app.post("/api/login", (req, res, next) => {
     passport.authenticate("local", (err: Error | null, user: Express.User | false, info: { message: string }) => {
       if (err) return next(err);
       if (!user) return res.status(401).json({ message: "Invalid username or password" });
@@ -132,7 +132,7 @@ export function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  app.post("/api/auth/logout", (req, res) => {
+  app.post("/api/logout", (req, res) => {
     req.logout((err: Error | null) => {
       if (err) {
         return res.status(500).json({ message: "Failed to logout" });
@@ -141,7 +141,7 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/auth/me", (req, res) => {
+  app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }

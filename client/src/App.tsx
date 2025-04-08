@@ -6,7 +6,9 @@ import Notifications from "@/pages/notifications";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "@/lib/protected-route";
-import { Loader2 } from "lucide-react";
+import { AuthProvider } from "@/lib/authProvider";
+import { MapProvider } from "@/lib/mapProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 function Router() {
   return (
@@ -40,7 +42,14 @@ function Router() {
 }
 
 function App() {
-  return <Router />;
+  return (
+    <AuthProvider>
+      <MapProvider>
+        <Router />
+        <Toaster />
+      </MapProvider>
+    </AuthProvider>
+  );
 }
 
 export default App;

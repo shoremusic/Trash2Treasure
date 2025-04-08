@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Query to get the current user, with custom query function
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["/api/auth/me"],
+    queryKey: ["/api/user"],
     retry: false,
     queryFn: async ({ queryKey }) => {
       try {
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
       console.log("Attempting login with username:", username);
       try {
-        const res = await apiRequest("POST", "/api/auth/login", { username, password });
+        const res = await apiRequest("POST", "/api/login", { username, password });
         const data = await res.json();
         console.log("Login response:", data);
         return data;
@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     mutationFn: async ({ username, email, password }: { username: string; email: string; password: string }) => {
       console.log("Attempting registration with username:", username, "and email:", email);
       try {
-        const res = await apiRequest("POST", "/api/auth/register", { username, email, password });
+        const res = await apiRequest("POST", "/api/register", { username, email, password });
         const data = await res.json();
         console.log("Registration response:", data);
         return data;
@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/auth/logout", {});
+      const res = await apiRequest("POST", "/api/logout", {});
       return res.json();
     },
     onSuccess: () => {
