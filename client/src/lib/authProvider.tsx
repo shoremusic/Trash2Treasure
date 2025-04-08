@@ -39,20 +39,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     retry: false,
     queryFn: async ({ queryKey }) => {
       try {
+        console.log("Fetching user data...");
         const res = await fetch(queryKey[0] as string, {
           credentials: "include",
         });
         
         if (res.status === 401) {
+          console.log("User not authenticated");
           return null;
         }
         
         if (!res.ok) {
+          console.error(`Error ${res.status}: ${res.statusText}`);
           throw new Error(`${res.status}: ${res.statusText}`);
         }
         
-        return await res.json();
+        const userData = await res.json();
+        console.log("User data received:", userData);
+        return userData;
       } catch (err) {
+        console.error("Error fetching user:", err);
         return null;
       }
     }
@@ -69,10 +75,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      const res = await apiRequest("POST", "/api/auth/login", { username, password });
-      return res.json();
+      console.log("Attempting login with username:", username);
+      try {
+        const res = await apiRequest("POST", "/api/auth/login", { username, password });
+        const data = await res.json();
+        console.log("Login response:", data);
+        return data;
+      } catch (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("Login successful:", data);
       refetch();
       toast({
         title: "Login successful",
@@ -80,6 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     },
     onError: (error: Error) => {
+      console.error("Login mutation error:", error);
       toast({
         title: "Login failed",
         description: error.message,
@@ -91,10 +107,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async ({ username, email, password }: { username: string; email: string; password: string }) => {
-      const res = await apiRequest("POST", "/api/auth/register", { username, email, password });
-      return res.json();
+      console.log("Attempting registration with username:", username, "and email:", email);
+      try {
+        const res = await apiRequest("POST", "/api/auth/register", { username, email, password });
+        const data = await res.json();
+        console.log("Registration response:", data);
+        return data;
+      } catch (error) {
+        console.error("Registration error:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("Registration successful:", data);
       refetch();
       toast({
         title: "Registration successful",
@@ -102,6 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     },
     onError: (error: Error) => {
+      console.error("Registration mutation error:", error);
       toast({
         title: "Registration failed",
         description: error.message,
