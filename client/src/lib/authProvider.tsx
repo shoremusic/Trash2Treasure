@@ -33,16 +33,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const { toast } = useToast();
 
-  // Query to get the current user
+  // Query to get the current user, with custom query function
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/auth/me"],
     retry: false,
+    queryFn: async ({ queryKey }) => {
+      try {
+        const res = await fetch(queryKey[0] as string, {
+          credentials: "include",
+        });
+        
+        if (res.status === 401) {
+          return null;
+        }
+        
+        if (!res.ok) {
+          throw new Error(`${res.status}: ${res.statusText}`);
+        }
+        
+        return await res.json();
+      } catch (err) {
+        return null;
+      }
+    }
   });
 
   useEffect(() => {
     if (data) {
       setUser(data);
-    } else if (error) {
+    } else {
       setUser(null);
     }
   }, [data, error]);
