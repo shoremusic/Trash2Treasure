@@ -6,12 +6,24 @@ import Notifications from "@/pages/notifications";
 import Auth from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import { useAuth } from "@/lib/authProvider";
+import { useEffect, useState } from "react";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  // Add a timeout to avoid infinite loading
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  
+  useEffect(() => {
+    // If still loading after 3 seconds, force proceed to Auth page
+    const timer = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
-  // While checking auth status, return a loading screen
-  if (isLoading) {
+  // While checking auth status, return a loading screen, but only for a limited time
+  if (isLoading && !loadingTimeout) {
     return (
       <div className="h-screen w-full flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -19,7 +31,7 @@ function Router() {
     );
   }
 
-  // If not authenticated, only show auth page
+  // If not authenticated or loading timed out, show auth page
   if (!isAuthenticated) {
     return (
       <Switch>
