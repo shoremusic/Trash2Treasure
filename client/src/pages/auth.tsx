@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useAuth } from "@/lib/authProvider";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,8 +32,17 @@ type RegisterValues = z.infer<typeof registerSchema>;
 export default function Auth() {
   const [_, setLocation] = useLocation();
   const [isRegisterRoute] = useRoute("/register");
-  const { login, register, isLoading } = useAuth();
+  const { login, register, isAuthenticated } = useAuth();
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>(isRegisterRoute ? "register" : "login");
+  
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLocation("/");
+    }
+  }, [isAuthenticated, setLocation]);
 
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -55,19 +64,25 @@ export default function Auth() {
 
   const onLoginSubmit = async (values: LoginValues) => {
     try {
+      setLoginLoading(true);
       await login(values.username, values.password);
       setLocation("/");
     } catch (error) {
       // Error is handled in the auth provider
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const onRegisterSubmit = async (values: RegisterValues) => {
     try {
+      setRegisterLoading(true);
       await register(values.username, values.email, values.password);
       setLocation("/");
     } catch (error) {
       // Error is handled in the auth provider
+    } finally {
+      setRegisterLoading(false);
     }
   };
 
@@ -131,8 +146,8 @@ export default function Auth() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Logging in..." : "Login"}
+                  <Button type="submit" className="w-full" disabled={loginLoading}>
+                    {loginLoading ? "Logging in..." : "Login"}
                   </Button>
                 </form>
               </Form>
@@ -201,8 +216,8 @@ export default function Auth() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Create account"}
+                  <Button type="submit" className="w-full" disabled={registerLoading}>
+                    {registerLoading ? "Creating account..." : "Create account"}
                   </Button>
                 </form>
               </Form>
