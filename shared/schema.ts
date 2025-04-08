@@ -1,5 +1,6 @@
 import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
 
 // User table
@@ -11,7 +12,14 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastPosted: timestamp("last_posted"),
   kudos: integer("kudos").default(0).notNull(),
+  canViewImmediately: boolean("can_view_immediately").default(false).notNull(),
 });
+
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+  comments: many(comments),
+  kudos: many(kudos),
+}));
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -22,7 +30,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 // Post table
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   location: text("location").notNull(),
   latitude: text("latitude").notNull(),
   longitude: text("longitude").notNull(),
@@ -31,6 +39,14 @@ export const posts = pgTable("posts", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  user: one(users, { fields: [posts.userId], references: [users.id] }),
+  items: many(items),
+  images: many(images),
+  comments: many(comments),
+  kudos: many(kudos),
+}));
 
 export const insertPostSchema = createInsertSchema(posts).pick({
   userId: true,
@@ -44,10 +60,14 @@ export const insertPostSchema = createInsertSchema(posts).pick({
 // Post items
 export const items = pgTable("items", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").notNull(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   status: text("status").notNull().default("available"), // available, taken
 });
+
+export const itemsRelations = relations(items, ({ one }) => ({
+  post: one(posts, { fields: [items.postId], references: [posts.id] }),
+}));
 
 export const insertItemSchema = createInsertSchema(items).pick({
   postId: true,
@@ -58,10 +78,14 @@ export const insertItemSchema = createInsertSchema(items).pick({
 // Post images
 export const images = pgTable("images", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").notNull(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
   url: text("url").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const imagesRelations = relations(images, ({ one }) => ({
+  post: one(posts, { fields: [images.postId], references: [posts.id] }),
+}));
 
 export const insertImageSchema = createInsertSchema(images).pick({
   postId: true,
@@ -71,11 +95,16 @@ export const insertImageSchema = createInsertSchema(images).pick({
 // Comments
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").notNull(),
-  userId: integer("user_id").notNull(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, { fields: [comments.postId], references: [posts.id] }),
+  user: one(users, { fields: [comments.userId], references: [users.id] }),
+}));
 
 export const insertCommentSchema = createInsertSchema(comments).pick({
   postId: true,
@@ -86,10 +115,15 @@ export const insertCommentSchema = createInsertSchema(comments).pick({
 // Kudos
 export const kudos = pgTable("kudos", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").notNull(),
-  userId: integer("user_id").notNull(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const kudosRelations = relations(kudos, ({ one }) => ({
+  post: one(posts, { fields: [kudos.postId], references: [posts.id] }),
+  user: one(users, { fields: [kudos.userId], references: [users.id] }),
+}));
 
 export const insertKudosSchema = createInsertSchema(kudos).pick({
   postId: true,
