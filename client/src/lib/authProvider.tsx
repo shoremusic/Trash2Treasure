@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
     onSuccess: (data) => {
       console.log("Login successful:", data);
-      refetch();
+      setUser(data);
       toast({
         title: "Login successful",
         description: `Welcome back, ${data.username}!`,
@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     },
     onSuccess: (data) => {
       console.log("Registration successful:", data);
-      refetch();
+      setUser(data);
       toast({
         title: "Registration successful",
         description: `Welcome to StreetFinds, ${data.username}!`,

@@ -9,6 +9,9 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
 export interface IStorage {
   // User methods
@@ -49,6 +52,9 @@ export interface IStorage {
 
   // Participation check
   canUserViewImmediately(userId?: number): Promise<boolean>;
+  
+  // Session store
+  sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
@@ -65,6 +71,8 @@ export class MemStorage implements IStorage {
   private imageId: number;
   private commentId: number;
   private kudosId: number;
+  
+  sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
@@ -80,6 +88,12 @@ export class MemStorage implements IStorage {
     this.imageId = 1;
     this.commentId = 1;
     this.kudosId = 1;
+    
+    // Use memory store for sessions
+    const MemoryStore = require('memorystore')(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
   }
 
   // User methods
@@ -381,6 +395,17 @@ export class MemStorage implements IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+
+  constructor() {
+    // Initialize PostgreSQL session store
+    const PostgresStore = connectPg(session);
+    this.sessionStore = new PostgresStore({
+      pool,
+      createTableIfMissing: true
+    });
+  }
+
   // User methods
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));

@@ -1,11 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth } from "./auth";
 import { 
-  insertUserSchema, 
   insertPostSchema, 
-  insertItemSchema, 
-  insertImageSchema, 
   insertCommentSchema, 
   insertKudosSchema
 } from "@shared/schema";
@@ -13,102 +11,16 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 function validateSessionUser(req: Request): number | null {
-  // Check if user is logged in
-  if (!req.session || !req.session.user) {
+  // Check if user is authenticated using Passport
+  if (!req.isAuthenticated() || !req.user) {
     return null;
   }
-  return req.session.user.id;
+  return req.user.id;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Authentication routes
-  app.post('/api/auth/register', async (req, res) => {
-    try {
-      const userData = insertUserSchema.parse(req.body);
-      
-      // Check if username or email already exists
-      const existingUser = await storage.getUserByUsername(userData.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-      
-      const existingEmail = await storage.getUserByEmail(userData.email);
-      if (existingEmail) {
-        return res.status(400).json({ message: "Email already exists" });
-      }
-      
-      const user = await storage.createUser(userData);
-      
-      // Set user in session
-      req.session.user = { id: user.id, username: user.username };
-      
-      return res.status(201).json({
-        id: user.id,
-        username: user.username,
-        email: user.email
-      });
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({ message: fromZodError(error).message });
-      }
-      return res.status(500).json({ message: "Failed to register user" });
-    }
-  });
-  
-  app.post('/api/auth/login', async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
-      }
-      
-      const user = await storage.getUserByUsername(username);
-      if (!user || user.password !== password) {
-        return res.status(401).json({ message: "Invalid username or password" });
-      }
-      
-      // Set user in session
-      req.session.user = { id: user.id, username: user.username };
-      
-      return res.status(200).json({
-        id: user.id,
-        username: user.username,
-        email: user.email
-      });
-    } catch (error) {
-      return res.status(500).json({ message: "Failed to login" });
-    }
-  });
-  
-  app.post('/api/auth/logout', (req, res) => {
-    req.session.destroy(err => {
-      if (err) {
-        return res.status(500).json({ message: "Failed to logout" });
-      }
-      res.status(200).json({ message: "Logged out successfully" });
-    });
-  });
-  
-  app.get('/api/auth/me', async (req, res) => {
-    const userId = validateSessionUser(req);
-    if (!userId) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-    
-    const user = await storage.getUser(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    
-    return res.status(200).json({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      kudos: user.kudos,
-      canViewImmediately: await storage.canUserViewImmediately(user.id)
-    });
-  });
+  // Setup authentication with Passport
+  setupAuth(app);
   
   // Post routes
   app.post('/api/posts', async (req, res) => {
